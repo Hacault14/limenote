@@ -1,44 +1,71 @@
-# ShipFast — Typescript
+# FckSubscription Boilerplate
 
-Hey maker 👋 it's Marc from [ShipFast](https://shipfa.st/docs). Let's get your startup off the ground, FAST ⚡️
+A modern SaaS boilerplate built with TypeScript, Supabase, and Stripe. Get your subscription-based service up and running quickly with this production-ready template.
 
-<sub>**Watch/Star the repo to be notified when updates are pushed**</sub>
+## Tech Stack
 
-## Get Started
+- [Next.js](https://nextjs.org/) - React framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Supabase](https://supabase.com/) - Backend and authentication
+- [Stripe](https://stripe.com/) - Payment processing
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [Framer Motion](https://www.framer.com/motion/) - Animations
 
-1. Follow the [Get Started Tutorial](https://shipfa.st/docs) to clone the repo and run your local server 💻
+## Prerequisites
 
-<sub>**Looking for the /pages router version?** Use this [documentation](https://shipfa.st/docs-old) instead</sub>
+Before you begin, ensure you have:
+- Node.js installed (v16 or higher)
+- A Supabase account
+- A Stripe account
 
-2. Follow the [Ship In 5 Minutes Tutorial](https://shipfa.st/docs/tutorials/ship-in-5-minutes) to learn the foundation and ship your app quickly ⚡️
+## Getting Started
 
-## Links
+1. **Clone and Install Dependencies**
+   ```bash
+   npm install
+   ```
 
--   [📚 Documentation](https://shipfa.st/docs)
--   [📣 Updates](https://shipfast.beehiiv.com/)
--   [🧑‍💻 Discord](https://shipfa.st/dashboard)
--   [🥇 Leaderboard](https://shipfa.st/leaderboard)
+2. **Environment Setup**
+   - Rename `.env.example` to `.env.local`
+   - Fill in your environment variables:
+     - Supabase credentials
+     - Stripe API keys
+     - Other configuration values
 
-## Support
+3. **Install Additional Dependencies**
+   ```bash
+   # Install Framer Motion for animations
+   npm install framer-motion
 
-Reach out at hello@shipfa.st
+   # Install Tailwind Forms plugin
+   npm install -D @tailwindcss/forms
+   ```
 
-Let's ship it, FAST ⚡️
+4. **Supabase Setup**
+   - Create a Supabase project
+   - Copy your project URL and anon key to `.env.local`
+   - Set up your database schema (documentation coming soon)
 
-\_
+5. **Customize Assets**
+   Before deploying, remember to update:
+   - `icon.png`
+   - `favicon.ico`
+   - OpenGraph images
+   - Twitter card images
 
-**📈 Grow your startup with [DataFast](https://datafa.st?ref=shipfast_readme)**
+## Development
 
--   Analyze your traffic
--   Get insights on your customers
--   Make data-driven decisions
+```bash
+npm run dev
+```
 
-ShipFast members get 30% OFF on all plans! 🎁
+Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
-![datafast](https://github.com/user-attachments/assets/2a9710f8-9a39-4593-b4bf-9ee933529870)
+## Documentation
 
-AJOUTER FRAMER MOTION
-PTET ça aussi : npm install -D @tailwindcss/forms
-SETUP SUPABASE 
-CHANGER LES IMAGES : icon, favicon, opengraph, twitterimage avant de publier sinon c'est extrement chiant à changer
-CHANGER LE .env.exemple en .env.local
+For more detailed documentation, visit [shipfas.st/docs](https://shipfas.st/docs)
+
+## License
+
+C'est oim
+
