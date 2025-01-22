@@ -13,7 +13,7 @@ A savoir :
 Bon code les Loulous !
 ---
 
-#Steps
+# Steps
 
 1. git clone https://github.com/martinbon39/fcksubscription-boilerplate.git [YOUR APP]
 2. cd [YOUR APP]
