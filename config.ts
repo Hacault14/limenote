@@ -5,7 +5,7 @@ const config = {
   // REQUIRED
   appName: "FormFlow",
   // REQUIRED: a short description of your app for SEO tags (can be overwritten)
-  appDescription: "Create stunning forms that convert in minutes",
+  appDescription: "Create stunning forms that convert in minutes.",
   // REQUIRED (no https://, not trialing slash at the end, just the naked domain)
   domainName: "formflow.app",
   stripe: {
