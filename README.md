@@ -13,6 +13,14 @@ A savoir :
 Bon code les Loulous !
 ---
 
+#Steps
+
+1. git clone https://github.com/martinbon39/fcksubscription-boilerplate.git [YOUR APP]
+2. cd [YOUR APP]
+3. npm install
+4. git remote remove origin
+
+---
 ## Tech Stack
 
 - [Next.js](https://nextjs.org/) - React framework
