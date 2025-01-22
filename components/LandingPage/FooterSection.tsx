@@ -71,7 +71,7 @@ const FooterSection = () => {
                 className="md:grid md:grid-cols-1 md:gap-8"
               >
                 <div>
-                  <h3 className="text-sm font-semibold text-black">Légal</h3>
+                  <h3 className="text-sm font-semibold text-black">Legal</h3>
                   <ul role="list" className="mt-4 space-y-4">
                     {footer.legal.map((item) => (
                       <li key={item.name}>
