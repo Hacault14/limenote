@@ -36,3 +36,9 @@ Let's ship it, FAST ⚡️
 ShipFast members get 30% OFF on all plans! 🎁
 
 ![datafast](https://github.com/user-attachments/assets/2a9710f8-9a39-4593-b4bf-9ee933529870)
+
+AJOUTER FRAMER MOTION
+PTET ça aussi : npm install -D @tailwindcss/forms
+SETUP SUPABASE 
+CHANGER LES IMAGES : icon, favicon, opengraph, twitterimage avant de publier sinon c'est extrement chiant à changer
+CHANGER LE .env.exemple en .env.local
