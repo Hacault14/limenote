@@ -2,6 +2,17 @@
 
 A modern SaaS boilerplate built with TypeScript, Supabase, and Stripe. Get your subscription-based service up and running quickly with this production-ready template.
 
+---
+A savoir :
+
+1. Pour setup une landing page clean vous devez tout faire dans @config.ts    Les couleurs, textes et tout en un seul fichier !
+      A savoir aussi : les apps fcksubscription ont 3 couleurs : noir, blanc et une couleur que vous choisisez et que vous mettez dans le config 
+2. Vous avez de notepad cursor que j'ai rédigé et que j'utilise dans le folder cursor-notepads    Attention il faut parfois les modifier pour que ce soit votre app ! 
+3. Vous avez un folder pour que Cursor ecrit les commandes SupaBase (supabase-migration) 
+
+Bon code les Loulous !
+---
+
 ## Tech Stack
 
 - [Next.js](https://nextjs.org/) - React framework
