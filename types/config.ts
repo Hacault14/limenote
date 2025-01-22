@@ -162,4 +162,8 @@ export interface ConfigProps {
     loginUrl: string;
     callbackUrl: string;
   };
+  crisp?: {
+    id: string;
+    onlyShowOnRoutes?: string[];
+  };
 }
