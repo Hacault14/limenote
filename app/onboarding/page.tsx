@@ -59,7 +59,6 @@ export default function OnboardingPage() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
