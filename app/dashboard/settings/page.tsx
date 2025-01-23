@@ -1,29 +1,59 @@
+'use client';
+
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { createClient } from "@/libs/supabase/client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Tables } from "@/types/database";
+import { User } from '@supabase/supabase-js';
 
-export const dynamic = "force-dynamic";
+export default function SettingsPage() {
+  const [userSettings, setUserSettings] = useState<Tables<'user_settings'> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
 
-export default async function SettingsPage() {
-  const supabase = createServerComponentClient({ cookies });
-  
-  // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          router.push("/signin");
+          return;
+        }
 
-  if (!session) {
-    redirect("/signin");
+        setUser(user);
+
+        // Fetch user settings
+        const { data: settings } = await supabase
+          .from("user_settings")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+
+        setUserSettings(settings);
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-zinc-500 dark:text-zinc-400">Loading...</div>
+        </div>
+      </DashboardLayout>
+    );
   }
-
-  // Fetch user settings
-  const { data: userSettings } = await supabase
-    .from("user_settings")
-    .select("*")
-    .eq("user_id", session.user.id)
-    .single();
 
   return (
     <DashboardLayout>
@@ -64,7 +94,7 @@ export default async function SettingsPage() {
                         name="email"
                         id="email"
                         disabled
-                        value={session.user.email}
+                        value={user?.email || ''}
                         className="shadow-sm focus:ring-lime-500 focus:border-lime-500 block w-full sm:text-sm border-zinc-300 dark:border-zinc-700 rounded-md bg-zinc-100 dark:bg-zinc-900"
                       />
                     </div>

@@ -1,3 +1,5 @@
+'use client';
+
 import { useStore } from '@/hooks/useStore'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/libs/supabase/client'
