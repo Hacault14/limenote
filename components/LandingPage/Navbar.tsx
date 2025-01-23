@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import config from "@/config";
 import { useConfigColors } from "@/hooks/useConfigColors";
+import Link from "next/link";
 
 const navigation = [
   { name: "Features", href: "#features" },
@@ -120,7 +121,7 @@ const Navbar = () => {
                     className="px-8 py-3 text-black rounded-xl hover:opacity-90 transition-colors"
                     style={{ backgroundColor: colors.accent }}
                   >
-                    Early Access
+                    <Link href="/signup">Get Started</Link>
                   </button>
                 </div>
               </div>

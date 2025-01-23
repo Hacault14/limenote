@@ -1,5 +1,6 @@
 import Image from "next/image";
 import config from "@/config";
+import Link from "next/link";
 
 const CTA = () => {
   return (
@@ -22,7 +23,7 @@ const CTA = () => {
           </p>
 
           <button className="btn btn-primary btn-wide">
-            Get {config.appName}
+            <Link href="/signup">Get Started</Link>
           </button>
         </div>
       </div>
