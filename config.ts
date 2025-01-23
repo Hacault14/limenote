@@ -3,7 +3,7 @@ import { ConfigProps } from "./types/config";
 
 const config = {
   // REQUIRED
-  appName: "FormFlow",
+  appName: "FormFloow",
   // REQUIRED: a short description of your app for SEO tags (can be overwritten)
   appDescription: "Create stunning forms that convert in minutes.",
   // REQUIRED (no https://, not trialing slash at the end, just the naked domain)
