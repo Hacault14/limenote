@@ -128,7 +128,7 @@ export default function Dashboard() {
             Welcome back, {user?.email}
           </h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Here's what's happening in your workspaces
+            Here&apos;s what&apos;s happening in your workspaces
           </p>
         </div>
 

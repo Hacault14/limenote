@@ -19,7 +19,7 @@ interface EditorContentProps {
 
 export default function EditorContent({ page, onSave }: EditorContentProps) {
   const supabase = createClient();
-  const [autoSaveTimer, setAutoSaveTimer] = useState<NodeJS.Timeout | null>(null);
+  const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
     extensions: [
