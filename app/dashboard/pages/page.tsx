@@ -8,9 +8,7 @@ import Link from "next/link";
 import NewPageButton from "./NewPageButton";
 
 interface PageWithWorkspace extends Tables<'pages'> {
-  workspaces?: {
-    name: string;
-  };
+  workspace_name: string | null;
 }
 
 export default function PagesPage() {
@@ -27,9 +25,7 @@ export default function PagesPage() {
           .from("pages")
           .select(`
             *,
-            workspaces (
-              name
-            )
+            workspace_name:workspaces(name)
           `)
           .order("updated_at", { ascending: false });
 
@@ -39,7 +35,10 @@ export default function PagesPage() {
           .select("*")
           .order("created_at", { ascending: false });
 
-        setPages(pages || []);
+        setPages(pages?.map(page => ({
+          ...page,
+          workspace_name: page.workspace_name?.[0]?.name || null
+        })) || []);
         setWorkspaces(workspaces || []);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -91,7 +90,7 @@ export default function PagesPage() {
                             {page.title}
                           </p>
                           <p className="ml-1 flex-shrink-0 font-normal text-zinc-500 dark:text-zinc-400">
-                            in {page.workspaces?.name}
+                            in {page.workspace_name}
                           </p>
                         </div>
                         <div className="mt-2 flex">
