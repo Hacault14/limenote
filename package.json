@@ -14,8 +14,16 @@
     "@mdx-js/loader": "^2.3.0",
     "@mdx-js/react": "^2.3.0",
     "@next/mdx": "^13.5.6",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.45.0",
+    "@tiptap/extension-image": "^2.11.3",
+    "@tiptap/extension-link": "^2.11.3",
+    "@tiptap/extension-placeholder": "^2.11.3",
+    "@tiptap/extension-task-item": "^2.11.3",
+    "@tiptap/extension-task-list": "^2.11.3",
+    "@tiptap/react": "^2.11.3",
+    "@tiptap/starter-kit": "^2.11.3",
     "axios": "^1.6.8",
     "crisp-sdk-web": "^1.0.22",
     "eslint": "8.47.0",
@@ -33,7 +41,8 @@
     "react-tooltip": "^5.26.3",
     "resend": "^4.0.1",
     "stripe": "^13.11.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",

@@ -6,7 +6,7 @@ La font que y'a dans le dossier public Naturaliy
 Je veux 3 couleurs 
 Blanc --> #FFFFFF
 Noir --> #000000
-Et la couleur accent principale du coup de l'app (dans le fichier config.ts) --> #x
+Et la couleur accent principale du coup de l'app (dans le fichier config.ts) --> #32CD32
 
 Regarde la direction artistique global de mon autre site web principal et comprends la
 

@@ -1,8 +1,8 @@
-reagarde tout @page.tsx @PromptConceptFeatures @PromptStructure @DirectionArtistique 
+reagarde tout la codebase et les fichiers @page.tsx @PromptConceptFeatures @PromptStructure @DirectionArtistique 
 
 Faut qu'on fasse l'app dans le dashboard @page.tsx 
 
-y'a peut être des trucs à faire avant en mode faut que tout amrche bien tu vois faut que ce soit beau, efficace, excellente UI et surtout excellente UX faut faire toutes les features, que tout marche bien parfaitement 
+y'a peut être des trucs à faire avant en mode faut que tout marche bien tu vois faut que ce soit beau, efficace, excellente UI et surtout excellente UX faut faire toutes les features, que tout marche bien parfaitement 
 
 J'utilise supabase tu vas ecrire les commandes completes avec RLS et les policies dans le fichier migration-supabase
 
