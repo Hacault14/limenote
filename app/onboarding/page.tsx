@@ -4,7 +4,7 @@ import React, { useState, useRef } from 'react'
 import type { JSX } from 'react'
 import Image from 'next/image'
 
-type OnboardingStep = 'profile' | 'usage' | 'team' | 'details' | 'interests' | 'templates';
+type OnboardingStep = 'profile' | 'usage' | 'team' | 'details' | 'interests' | 'templates' | 'workspace';
 
 interface UsageOption {
   id: string;
@@ -52,7 +52,10 @@ export default function OnboardingPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [workspaceName, setWorkspaceName] = useState('');
+  const [workspaceIcon, setWorkspaceIcon] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const workspaceIconRef = useRef<HTMLInputElement>(null);
   const [workType, setWorkType] = useState('');
   const [role, setRole] = useState('');
   const [companySize, setCompanySize] = useState('');
@@ -114,6 +117,26 @@ export default function OnboardingPage() {
         ? prev.filter(id => id !== templateId)
         : [...prev, templateId]
     );
+  };
+
+  const handleTemplateSubmit = () => {
+    if (selectedUsage === 'work') {
+      setCurrentStep('workspace');
+    } else {
+      console.log('Navigate to dashboard with templates:', selectedTemplates);
+    }
+  };
+
+  const handleWorkspaceIconClick = () => {
+    workspaceIconRef.current?.click();
+  };
+
+  const handleWorkspaceIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setWorkspaceIcon(url);
+    }
   };
 
   const usageOptions: UsageOption[] = [
@@ -1314,6 +1337,10 @@ export default function OnboardingPage() {
         setRole('');
         setCompanySize('');
         break;
+      case 'workspace':
+        setCurrentStep('templates');
+        setWorkspaceName('');
+        break;
     }
   };
 
@@ -1609,17 +1636,94 @@ export default function OnboardingPage() {
           <div className="flex flex-col items-center gap-4">
             <button
               className="w-full max-w-md bg-[#32CD32] text-white rounded-lg py-2 hover:opacity-90 transition-colors"
-              onClick={() => console.log('Navigate to dashboard with templates:', selectedTemplates)}
+              onClick={handleTemplateSubmit}
             >
               Continue
             </button>
             <button
               className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-              onClick={() => console.log('Skip template selection')}
+              onClick={() => handleTemplateSubmit()}
             >
               Skip for now
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'workspace') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
+        <div className="w-full max-w-md relative">
+          {/* Back Button */}
+          <button
+            onClick={handleBack}
+            className="absolute -left-12 top-0 text-gray-400 hover:text-white transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-3xl font-bold text-white mb-2">Give your workspace a name</h1>
+          </div>
+
+          {/* Workspace Icon */}
+          <input
+            type="file"
+            ref={workspaceIconRef}
+            onChange={handleWorkspaceIconChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <div className="flex flex-col items-center mb-8">
+            <div 
+              onClick={handleWorkspaceIconClick}
+              className="w-24 h-24 bg-gray-800 rounded-xl flex items-center justify-center cursor-pointer hover:bg-gray-700 transition-colors overflow-hidden"
+            >
+              {workspaceIcon ? (
+                <Image src={workspaceIcon} alt="Workspace Icon" width={96} height={96} className="w-full h-full object-cover" />
+              ) : (
+              <span className="text-4xl text-white">
+                {workspaceName ? workspaceName.charAt(0).toUpperCase() : 'A'}
+              </span>
+              )}
+            </div>
+            <p className="text-gray-400 text-sm mt-2 cursor-pointer hover:text-gray-300" onClick={handleWorkspaceIconClick}>
+              Choose or add an icon
+            </p>
+          </div>
+
+          {/* Workspace Name Input */}
+          <div className="mb-2">
+            <label className="block text-sm text-gray-400 mb-2">
+              Workspace name
+            </label>
+            <input
+              type="text"
+              value={workspaceName}
+              onChange={(e) => setWorkspaceName(e.target.value)}
+              placeholder="Acme Inc."
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#32CD32]"
+            />
+          </div>
+
+          <div className="mb-8">
+            <p className="text-sm text-gray-400">
+              The name of your company or organization
+            </p>
+          </div>
+
+          {/* Continue Button */}
+          <button
+            onClick={() => console.log('Navigate to dashboard with workspace:', workspaceName)}
+            className="w-full bg-[#32CD32] text-white rounded-lg py-2 hover:opacity-90 transition-colors"
+          >
+            Continue
+          </button>
         </div>
       </div>
     );
