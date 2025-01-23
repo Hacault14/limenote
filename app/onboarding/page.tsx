@@ -49,6 +49,8 @@ export default function OnboardingPage() {
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [workType, setWorkType] = useState('');
   const [role, setRole] = useState('');
@@ -70,7 +72,9 @@ export default function OnboardingPage() {
   };
 
   const handleContinue = () => {
-    setCurrentStep('usage');
+    if (name.trim() && password.trim()) {
+      setCurrentStep('usage');
+    }
   };
 
   const handleUsageSelect = (usageId: string) => {
@@ -1668,6 +1672,8 @@ export default function OnboardingPage() {
             <input
               type="text"
               id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Name"
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#32CD32]"
             />
@@ -1682,6 +1688,8 @@ export default function OnboardingPage() {
               <input
                 type={showPassword ? "text" : "password"}
                 id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#32CD32]"
               />
@@ -1716,7 +1724,12 @@ export default function OnboardingPage() {
           {/* Continue Button */}
           <button 
             onClick={handleContinue}
-            className="w-full bg-[#32CD32] text-white rounded-lg py-2 hover:opacity-90 transition-colors"
+            disabled={!name.trim() || !password.trim()}
+            className={`w-full text-white rounded-lg py-2 transition-colors ${
+              name.trim() && password.trim()
+                ? 'bg-[#32CD32] hover:opacity-90'
+                : 'bg-gray-600 cursor-not-allowed'
+            }`}
           >
             Continue
           </button>
