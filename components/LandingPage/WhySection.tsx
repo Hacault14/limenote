@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import config from "@/config";
 import { useConfigColors } from "@/hooks/useConfigColors";
 import WhyIcon from "@/components/ui/WhyIcon";
+import Link from "next/link";
 
 const WhySection = () => {
   const colors = useConfigColors();
@@ -92,7 +93,7 @@ const WhySection = () => {
             className="px-8 py-4 rounded-xl text-lg font-medium text-black hover:opacity-90 transition-colors"
             style={{ backgroundColor: colors.accent }}
           >
-            Get Early Access
+            <Link href="/signup">Get Started</Link>
           </button>
         </motion.div>
       </div>

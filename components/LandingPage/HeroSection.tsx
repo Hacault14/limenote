@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, useAnimation } from "framer-motion";
 import config from "@/config";
 import { useConfigColors } from "@/hooks/useConfigColors";
+import Link from "next/link";
 
 const HeroSection = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -190,7 +191,7 @@ const HeroSection = () => {
                 className="px-8 py-4 text-black rounded-xl text-lg font-medium hover:opacity-90 transition-colors"
                 style={{ backgroundColor: colors.accent }}
               >
-                {hero.cta.primary}
+                <Link href="/signup">Get Started</Link>
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
