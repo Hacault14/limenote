@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useState } from 'react';
 import Image from 'next/image'
 import ButtonSignin from '@/components/ButtonSignin'
@@ -90,7 +91,7 @@ export default function SignupPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
               <h3 className="text-green-800 font-medium mb-1">Check your inbox</h3>
               <p className="text-green-700 text-sm">
-                We've sent a magic link to <strong>{email}</strong>. Click the link to complete your signup.
+                We&apos;ve sent a magic link to <strong>{email}</strong>. Click the link to complete your signup.
               </p>
             </div>
           )}

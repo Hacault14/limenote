@@ -1,6 +1,7 @@
-'use client';
+'use client'
 
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react'
+import type { JSX } from 'react'
 import Image from 'next/image'
 
 type OnboardingStep = 'profile' | 'usage' | 'team' | 'details' | 'interests' | 'templates';
@@ -49,13 +50,13 @@ export default function OnboardingPage() {
   const [selectedTeam, setSelectedTeam] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [workType, setWorkType] = useState('');
   const [role, setRole] = useState('');
   const [companySize, setCompanySize] = useState('');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -1503,7 +1504,7 @@ export default function OnboardingPage() {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">What's on your mind?</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">What&apos;s on your mind?</h1>
             <p className="text-gray-400">Select as many as you want.</p>
           </div>
 
@@ -1626,7 +1627,7 @@ export default function OnboardingPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl font-bold text-white mb-2">Create a profile</h1>
-          <p className="text-gray-400">This is how you'll appear in LimeNote</p>
+          <p className="text-gray-400">This is how you&apos;ll appear in LimeNote</p>
         </div>
 
         {/* Profile Form */}
