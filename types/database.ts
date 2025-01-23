@@ -8,6 +8,10 @@ export type Json =
 
 export type WorkspaceRole = 'owner' | 'admin' | 'member' | 'viewer'
 
+interface NotificationPreferences {
+  email: boolean;
+}
+
 export interface DatabaseTypes {
   public: {
     Tables: {
@@ -140,7 +144,7 @@ export interface DatabaseTypes {
         Row: {
           user_id: string
           theme: string
-          notification_preferences: Json
+          notification_preferences: NotificationPreferences
           last_workspace_id: string | null
           created_at: string
           updated_at: string
@@ -148,7 +152,7 @@ export interface DatabaseTypes {
         Insert: {
           user_id: string
           theme?: string
-          notification_preferences?: Json
+          notification_preferences?: NotificationPreferences
           last_workspace_id?: string | null
           created_at?: string
           updated_at?: string
@@ -156,7 +160,7 @@ export interface DatabaseTypes {
         Update: {
           user_id?: string
           theme?: string
-          notification_preferences?: Json
+          notification_preferences?: NotificationPreferences
           last_workspace_id?: string | null
           created_at?: string
           updated_at?: string

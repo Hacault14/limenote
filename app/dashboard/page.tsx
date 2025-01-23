@@ -6,6 +6,7 @@ import { Tables } from "@/types/database";
 import { createClient } from "@/libs/supabase/client";
 import Link from "next/link";
 import NewPageButton from "./pages/NewPageButton";
+import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -17,27 +18,50 @@ export default function Dashboard() {
   const [recentPages, setRecentPages] = useState<Tables<'pages'>[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     async function fetchData() {
       try {
         // Get user
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('Error fetching user:', userError);
+          router.push('/signin');
+          return;
+        }
+
+        if (!user) {
+          router.push('/signin');
+          return;
+        }
+
         setUser(user);
 
         // Fetch workspaces
-        const { data: workspaces } = await supabase
+        const { data: workspaces, error: workspacesError } = await supabase
           .from("workspaces")
           .select("*")
           .order("created_at", { ascending: false });
 
+        if (workspacesError) {
+          console.error('Error fetching workspaces:', workspacesError);
+          return;
+        }
+
         // Fetch recent pages
-        const { data: recentPages } = await supabase
+        const { data: recentPages, error: pagesError } = await supabase
           .from("pages")
           .select("*")
           .order("updated_at", { ascending: false })
           .limit(5);
+
+        if (pagesError) {
+          console.error('Error fetching pages:', pagesError);
+          return;
+        }
 
         setWorkspaces(workspaces || []);
         setRecentPages(recentPages || []);
@@ -49,7 +73,41 @@ export default function Dashboard() {
     }
 
     fetchData();
-  }, []);
+  }, [router]);
+
+  const createWorkspace = async () => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        router.push('/signin');
+        return;
+      }
+
+      // Create the workspace
+      const { data: workspace, error: workspaceError } = await supabase
+        .from('workspaces')
+        .insert({
+          name: 'New Workspace',
+          owner_id: user.id,
+          settings: {},
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (workspaceError) {
+        console.error('Error creating workspace:', workspaceError);
+        return;
+      }
+
+      // Update workspaces list with the new workspace
+      setWorkspaces([workspace, ...workspaces]);
+    } catch (error) {
+      console.error('Error creating workspace:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -79,9 +137,7 @@ export default function Dashboard() {
           <NewPageButton workspaces={workspaces} />
 
           <button
-            onClick={() => {
-              // TODO: Implement new workspace creation
-            }}
+            onClick={createWorkspace}
             className="relative block w-full rounded-lg border-2 border-dashed border-zinc-300 dark:border-zinc-700 p-12 text-center hover:border-zinc-400 dark:hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-lime-500 focus:ring-offset-2"
           >
             <svg
