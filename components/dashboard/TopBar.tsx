@@ -7,11 +7,13 @@ import { Tables } from '@/types/database'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function TopBar() {
   const { currentWorkspace, setSidebarOpen, theme, setTheme } = useStore()
   const [user, setUser] = useState<any>(null)
   const supabase = createClient()
+  const router = useRouter()
 
   useEffect(() => {
     async function getUser() {
@@ -20,6 +22,15 @@ export default function TopBar() {
     }
     getUser()
   }, [])
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   return (
     <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
@@ -128,7 +139,7 @@ export default function TopBar() {
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => supabase.auth.signOut()}
+                      onClick={handleSignOut}
                       className={`${
                         active ? 'bg-zinc-100 dark:bg-zinc-700' : ''
                       } block w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200`}

@@ -36,6 +36,15 @@ export default function DashboardPage() {
     checkSession()
   }, [router, supabase.auth])
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
@@ -50,7 +59,7 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={handleSignOut}
             className="text-gray-400 hover:text-white transition-colors"
           >
             Sign out

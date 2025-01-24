@@ -115,9 +115,22 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleContinue = () => {
-    if (name.trim() && password.trim()) {
+  const handleContinue = async () => {
+    try {
+      // Update the user's password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password
+      });
+
+      if (updateError) {
+        console.error('Error updating password:', updateError);
+        return;
+      }
+
+      // Continue with the onboarding flow
       setCurrentStep('usage');
+    } catch (error) {
+      console.error('Error in handleContinue:', error);
     }
   };
 

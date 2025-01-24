@@ -43,9 +43,9 @@ const Navbar = () => {
 
               {/* Desktop CTA */}
               <div className="hidden md:flex items-center gap-4">
-                <button className="px-4 py-2 text-white/70 hover:text-white transition-colors">
+                <Link href="/signin" className="px-4 py-2 text-white/70 hover:text-white transition-colors">
                   Login
-                </button>
+                </Link>
                 <button 
                   className="px-4 py-2 text-black rounded-xl hover:opacity-90 transition-colors"
                   style={{ backgroundColor: colors.accent }}
@@ -110,12 +110,13 @@ const Navbar = () => {
                   </a>
                 ))}
                 <div className="flex flex-col items-center gap-4 mt-8">
-                  <button
+                  <Link
+                    href="/signin"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="px-8 py-3 text-white/70 hover:text-white transition-colors"
                   >
                     Login
-                  </button>
+                  </Link>
                   <button
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="px-8 py-3 text-black rounded-xl hover:opacity-90 transition-colors"
