@@ -1,8 +1,10 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import type { JSX } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/libs/supabase/client'
 
 type OnboardingStep = 'profile' | 'usage' | 'team' | 'details' | 'interests' | 'templates' | 'workspace';
 
@@ -45,6 +47,9 @@ interface WorkTemplates {
 }
 
 export default function OnboardingPage() {
+  const router = useRouter();
+  const supabase = createClient();
+  const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('profile');
   const [selectedUsage, setSelectedUsage] = useState<string>('');
   const [selectedTeam, setSelectedTeam] = useState<string>('');
@@ -62,6 +67,41 @@ export default function OnboardingPage() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Session error:', error);
+          router.push('/signin');
+          return;
+        }
+
+        if (!session) {
+          console.error('No session found');
+          router.push('/signin');
+          return;
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Session check error:', error);
+        router.push('/signin');
+      }
+    };
+
+    checkSession();
+  }, [router, supabase.auth]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   const handlePhotoClick = () => {
     fileInputRef.current?.click();
@@ -119,11 +159,35 @@ export default function OnboardingPage() {
     );
   };
 
-  const handleTemplateSubmit = () => {
+  const navigateToDashboard = async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Session error:', error);
+        router.push('/signin');
+        return;
+      }
+
+      if (!session) {
+        console.error('No session found');
+        router.push('/signin');
+        return;
+      }
+
+      // We have a valid session, safe to navigate to dashboard
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      router.push('/signin');
+    }
+  };
+
+  const handleTemplateSubmit = async () => {
     if (selectedUsage === 'work') {
       setCurrentStep('workspace');
     } else {
-      console.log('Navigate to dashboard with templates:', selectedTemplates);
+      await navigateToDashboard();
     }
   };
 
@@ -1344,6 +1408,14 @@ export default function OnboardingPage() {
     }
   };
 
+  const handleInterestsContinue = async () => {
+    await navigateToDashboard();
+  };
+
+  const handleWorkspaceSubmit = async () => {
+    await navigateToDashboard();
+  };
+
   if (currentStep === 'details') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
@@ -1566,13 +1638,13 @@ export default function OnboardingPage() {
           <div className="flex flex-col items-center gap-4">
             <button
               className="w-full bg-[#32CD32] text-white rounded-lg py-2 hover:opacity-90 transition-colors"
-              onClick={() => console.log('Navigate to dashboard with interests:', selectedInterests)}
+              onClick={handleInterestsContinue}
             >
               Continue
             </button>
             <button
               className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-              onClick={() => console.log('Skip interests selection')}
+              onClick={() => navigateToDashboard()}
             >
               Skip for now
             </button>
@@ -1642,7 +1714,7 @@ export default function OnboardingPage() {
             </button>
             <button
               className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-              onClick={() => handleTemplateSubmit()}
+              onClick={() => navigateToDashboard()}
             >
               Skip for now
             </button>
@@ -1719,7 +1791,7 @@ export default function OnboardingPage() {
 
           {/* Continue Button */}
           <button
-            onClick={() => console.log('Navigate to dashboard with workspace:', workspaceName)}
+            onClick={handleWorkspaceSubmit}
             className="w-full bg-[#32CD32] text-white rounded-lg py-2 hover:opacity-90 transition-colors"
           >
             Continue
