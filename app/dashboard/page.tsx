@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/libs/supabase/client'
+import Sidebar from '@/components/dashboard/Sidebar'
+import TopNav from '@/components/dashboard/TopNav'
+import { Waves } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
+  const [authenticated, setAuthenticated] = useState(false)
 
   useEffect(() => {
     const checkSession = async () => {
@@ -26,6 +30,7 @@ export default function DashboardPage() {
           return
         }
 
+        setAuthenticated(true)
         setLoading(false)
       } catch (error) {
         console.error('Session check error:', error)
@@ -47,49 +52,62 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-900">
         <div className="text-white">Loading...</div>
       </div>
     )
   }
 
+  if (!authenticated) {
+    return null
+  }
+
   return (
-    <div className="min-h-screen bg-[#191919] text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <button
-            onClick={handleSignOut}
-            className="text-gray-400 hover:text-white transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-gray-800 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Recent Pages</h2>
-            <p className="text-gray-400">No pages yet</p>
-          </div>
+    <div className="min-h-screen bg-gray-900 text-gray-300">
+      <Sidebar />
+      <TopNav />
+      
+      <main className="pl-60 pt-12">
+        <div className="max-w-4xl mx-auto p-8">
+          <h1 className="text-4xl font-bold mb-6">Getting Started</h1>
           
-          <div className="bg-gray-800 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Your Workspaces</h2>
-            <p className="text-gray-400">No workspaces yet</p>
+          <div className="flex items-center space-x-2 text-xl mb-8">
+            <Waves className="text-yellow-500" />
+            <p>Welcome to LimeNote!</p>
           </div>
-          
-          <div className="bg-gray-800 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-            <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
-                Create new page
-              </button>
-              <button className="w-full text-left px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors">
-                Create new workspace
-              </button>
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">Here are the basics:</h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <input type="checkbox" className="mt-1" />
+                <p>Click anywhere and just start typing</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input type="checkbox" className="mt-1" />
+                <p>Hit / to see all the types of content you can add - headers, tables, images, and more</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input type="checkbox" className="mt-1" />
+                <p>Highlight any text and use the menu that pops up to style your writing</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input type="checkbox" className="mt-1" />
+                <p>Click + New Page in the sidebar to add a new page to your workspace</p>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <input type="checkbox" className="mt-1" />
+                <p>Use dark mode for a more comfortable writing experience at night</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 } 

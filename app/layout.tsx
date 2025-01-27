@@ -5,6 +5,7 @@ import { getSEOTags } from "@/libs/seo";
 import ClientLayout from "@/components/LayoutClient";
 import config from "@/config";
 import "./globals.css";
+import { ThemeProvider } from '@/components/providers/ThemeProvider'
 
 const font = Inter({ subsets: ["latin"] });
 
@@ -27,8 +28,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 			className={font.className}
 		>
 			<body>
-				{/* ClientLayout contains all the client wrappers (Crisp chat support, toast messages, tooltips, etc.) */}
-				<ClientLayout>{children}</ClientLayout>
+				<ThemeProvider>
+					{/* ClientLayout contains all the client wrappers (Crisp chat support, toast messages, tooltips, etc.) */}
+					<ClientLayout>{children}</ClientLayout>
+				</ThemeProvider>
 			</body>
 		</html>
 	);
