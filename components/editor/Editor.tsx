@@ -1,90 +1,92 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Tables } from '@/types/database';
-import { useStore } from '@/hooks/useStore';
-import { createClient } from '@/libs/supabase/client';
-import EditorToolbar from './EditorToolbar';
-import EditorContent from './EditorContent';
+import { useEditor, EditorContent } from '@tiptap/react'
+import StarterKit from '@tiptap/starter-kit'
+import { useEffect, useState, useCallback } from 'react'
+import { getClient } from '@/libs/supabase/client'
 
-interface EditorProps {
-  pageId: string;
+export interface EditorProps {
+  pageId: string
+  initialTitle?: string
+  initialContent?: string
+  onTitleChange?: (title: string) => void
 }
 
-export default function Editor({ pageId }: EditorProps) {
-  const { currentWorkspace } = useStore();
-  const [page, setPage] = useState<Tables<'pages'> | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const supabase = createClient();
+export default function Editor({ 
+  pageId, 
+  initialTitle = 'Untitled',
+  initialContent = '',
+  onTitleChange 
+}: EditorProps) {
+  const [title, setTitle] = useState(initialTitle)
+  const supabase = getClient()
 
-  // Fetch page data
-  useEffect(() => {
-    async function fetchPage() {
-      try {
-        const { data: page, error } = await supabase
-          .from('pages')
-          .select('*')
-          .eq('id', pageId)
-          .single();
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+    ],
+    content: initialContent,
+    editorProps: {
+      attributes: {
+        class: 'prose prose-invert max-w-none focus:outline-none',
+      },
+    },
+    onUpdate: ({ editor }) => {
+      // Save content to database
+      updatePage(title, editor.getHTML())
+    },
+    immediatelyRender: false
+  })
 
-        if (error) throw error;
-
-        setPage(page);
-      } catch (error) {
-        console.error('Error fetching page:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchPage();
-  }, [pageId]);
-
-  // Save page content
-  const savePage = async (content: any) => {
-    if (!page) return;
-
-    setSaving(true);
+  const updatePage = async (newTitle: string, content?: string) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('pages')
         .update({
-          content,
+          title: newTitle,
+          content: content || editor?.getHTML(),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', page.id);
+        .eq('id', pageId)
+        .select()
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
+      
+      // Ensure the parent component is updated
+      onTitleChange?.(newTitle)
     } catch (error) {
-      console.error('Error saving page:', error);
-    } finally {
-      setSaving(false);
+      console.error('Error updating page:', error)
     }
-  };
-
-  if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-pulse text-zinc-500 dark:text-zinc-400">
-          Loading...
-        </div>
-      </div>
-    );
   }
 
-  if (!page) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-zinc-500 dark:text-zinc-400">Page not found</div>
-      </div>
-    );
-  }
+  const handleTitleChange = useCallback((newTitle: string) => {
+    setTitle(newTitle)
+    updatePage(newTitle)
+  }, [])
+
+  // Update title when initialTitle changes (switching pages)
+  useEffect(() => {
+    if (initialTitle && initialTitle !== title) {
+      setTitle(initialTitle)
+      onTitleChange?.(initialTitle)
+    }
+  }, [initialTitle, pageId])
 
   return (
-    <div className="h-full flex flex-col">
-      <EditorToolbar page={page} saving={saving} />
-      <EditorContent page={page} onSave={savePage} />
+    <div className="space-y-8">
+      <input
+        type="text"
+        value={title}
+        onChange={(e) => handleTitleChange(e.target.value)}
+        placeholder="Untitled"
+        className="text-4xl font-bold bg-transparent border-none outline-none w-full text-white placeholder-gray-500"
+      />
+      
+      <EditorContent 
+        editor={editor} 
+        className="min-h-[500px] focus:outline-none"
+      />
     </div>
-  );
+  )
 } 

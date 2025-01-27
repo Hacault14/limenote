@@ -7,7 +7,7 @@ import Link from "next/link";
 import ButtonSignin from "@/components/ButtonSignin";
 import config from "@/config";
 import { useConfigColors } from "@/hooks/useConfigColors";
-import { createClient } from "@/libs/supabase/client";
+import { getClient } from "@/libs/supabase/client";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -15,7 +15,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = getClient();
   const colors = useConfigColors();
 
   const handleSignIn = async (e: React.FormEvent) => {

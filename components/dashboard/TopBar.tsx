@@ -2,7 +2,7 @@
 
 import { useStore } from '@/hooks/useStore'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/libs/supabase/client'
+import { getClient } from '@/libs/supabase/client'
 import { Tables } from '@/types/database'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 export default function TopBar() {
   const { currentWorkspace, setSidebarOpen, theme, setTheme } = useStore()
   const [user, setUser] = useState<any>(null)
-  const supabase = createClient()
+  const supabase = getClient()
   const router = useRouter()
 
   useEffect(() => {

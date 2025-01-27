@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/libs/supabase/client'
+import { getClient } from '@/libs/supabase/client'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopNav from '@/components/dashboard/TopNav'
 import { Waves } from 'lucide-react'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = getClient()
   const [loading, setLoading] = useState(true)
   const [authenticated, setAuthenticated] = useState(false)
 
@@ -52,7 +52,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-gray-900">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
         <div className="text-white">Loading...</div>
       </div>
     )
@@ -63,13 +63,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-300">
+    <div className="min-h-screen bg-[#191919] text-gray-300">
       <Sidebar />
       <TopNav />
       
-      <main className="pl-60 pt-12">
+      <main className="pl-52 pt-12">
         <div className="max-w-4xl mx-auto p-8">
-          <h1 className="text-4xl font-bold mb-6">Getting Started</h1>
+          <h1 className="text-4xl font-bold mb-6 text-white">Getting Started</h1>
           
           <div className="flex items-center space-x-2 text-xl mb-8">
             <Waves className="text-yellow-500" />
@@ -77,31 +77,31 @@ export default function DashboardPage() {
           </div>
 
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Here are the basics:</h2>
+            <h2 className="text-xl font-semibold text-white">Here are the basics:</h2>
             
             <div className="space-y-4">
               <div className="flex items-start space-x-3">
-                <input type="checkbox" className="mt-1" />
+                <input type="checkbox" className="mt-1 bg-transparent border-gray-600 rounded" />
                 <p>Click anywhere and just start typing</p>
               </div>
               
               <div className="flex items-start space-x-3">
-                <input type="checkbox" className="mt-1" />
+                <input type="checkbox" className="mt-1 bg-transparent border-gray-600 rounded" />
                 <p>Hit / to see all the types of content you can add - headers, tables, images, and more</p>
               </div>
               
               <div className="flex items-start space-x-3">
-                <input type="checkbox" className="mt-1" />
+                <input type="checkbox" className="mt-1 bg-transparent border-gray-600 rounded" />
                 <p>Highlight any text and use the menu that pops up to style your writing</p>
               </div>
               
               <div className="flex items-start space-x-3">
-                <input type="checkbox" className="mt-1" />
+                <input type="checkbox" className="mt-1 bg-transparent border-gray-600 rounded" />
                 <p>Click + New Page in the sidebar to add a new page to your workspace</p>
               </div>
               
               <div className="flex items-start space-x-3">
-                <input type="checkbox" className="mt-1" />
+                <input type="checkbox" className="mt-1 bg-transparent border-gray-600 rounded" />
                 <p>Use dark mode for a more comfortable writing experience at night</p>
               </div>
             </div>

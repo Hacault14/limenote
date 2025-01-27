@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/libs/supabase/client";
+import { getClient } from "@/libs/supabase/client";
 import config from "@/config";
 
 interface ButtonSigninProps {
@@ -15,7 +15,7 @@ interface ButtonSigninProps {
 // It automatically redirects user to callbackUrl (config.auth.callbackUrl) after login, which is normally a private page for users to manage their accounts.
 // If the user is already logged in, it will show their profile picture & redirect them to callbackUrl immediately.
 export default function ButtonSignin({ provider, text, extraStyle }: ButtonSigninProps) {
-  const supabase = createClient();
+  const supabase = getClient();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async () => {
