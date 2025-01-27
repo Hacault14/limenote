@@ -6,7 +6,8 @@ import { getClient } from '@/libs/supabase/client'
 import { Tables } from '@/types/database'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Search, Home, Inbox, Calendar, Settings, Trash, HelpCircle, Users, ChevronDown, Plus, ChevronsLeft } from 'lucide-react'
+import { Search, Home, Inbox, Calendar, Settings, Trash, HelpCircle, Users, ChevronDown, Plus, ChevronsLeft, Star, Copy, FileEdit, FolderInput, Trash2, FileUp, ExternalLink } from 'lucide-react'
+import * as ContextMenu from '@radix-ui/react-context-menu'
 
 type Page = Tables<'pages'>
 
@@ -189,6 +190,48 @@ export default function Sidebar() {
     }
   }
 
+  const handleDuplicate = async (page: Page) => {
+    try {
+      const { data: newPage, error } = await supabase
+        .from('pages')
+        .insert({
+          ...page,
+          id: undefined,
+          title: `${page.title} (Copy)`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      router.push(`/dashboard/${newPage.id}`)
+    } catch (error) {
+      console.error('Error duplicating page:', error)
+    }
+  }
+
+  const handleDelete = async (pageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('pages')
+        .delete()
+        .eq('id', pageId)
+
+      if (error) throw error
+      
+      // Update local state to remove the deleted page
+      setPages(prevPages => prevPages.filter(p => p.id !== pageId))
+      
+      // Only navigate if we're currently on the deleted page
+      if (pathname === `/dashboard/${pageId}`) {
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      console.error('Error deleting page:', error)
+    }
+  }
+
   if (!sidebarOpen) return null
 
   return (
@@ -260,15 +303,101 @@ export default function Sidebar() {
         <div className="px-3 py-2">
           <div className="text-[11px] font-semibold text-gray-500 mb-2 px-2">PAGES</div>
           {pages.map((page) => (
-            <Link
-              key={page.id}
-              href={`/dashboard/${page.id}`}
-              className={`block px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 truncate ${
-                pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
-              }`}
-            >
-              {page.title}
-            </Link>
+            <ContextMenu.Root key={page.id}>
+              <ContextMenu.Trigger>
+                <Link
+                  href={`/dashboard/${page.id}`}
+                  className={`block px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 truncate ${
+                    pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
+                  }`}
+                >
+                  {page.title}
+                </Link>
+              </ContextMenu.Trigger>
+
+              <ContextMenu.Portal>
+                <ContextMenu.Content 
+                  className="min-w-[220px] bg-[#2f2f2f] rounded-md overflow-hidden p-1 shadow-xl border border-[#3f3f3f] text-white"
+                >
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <Star size={16} className="mr-2" />
+                    Add to Favorites
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/dashboard/${page.id}`)}
+                  >
+                    <Copy size={16} className="mr-2" />
+                    Copy link
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                    onClick={() => handleDuplicate(page)}
+                  >
+                    <FileEdit size={16} className="mr-2" />
+                    Duplicate
+                    <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <FileEdit size={16} className="mr-2" />
+                    Rename
+                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+R</span>
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <FolderInput size={16} className="mr-2" />
+                    Move to
+                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+P</span>
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm text-red-400 cursor-pointer"
+                    onClick={() => handleDelete(page.id)}
+                  >
+                    <Trash2 size={16} className="mr-2" />
+                    Move to Trash
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <FileUp size={16} className="mr-2" />
+                    Turn into wiki
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <ExternalLink size={16} className="mr-2" />
+                    Open in new tab
+                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+⏎</span>
+                  </ContextMenu.Item>
+
+                  <ContextMenu.Item 
+                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                  >
+                    <ExternalLink size={16} className="mr-2" />
+                    Open in side peek
+                    <span className="ml-auto text-xs text-gray-400">Alt+Click</span>
+                  </ContextMenu.Item>
+                </ContextMenu.Content>
+              </ContextMenu.Portal>
+            </ContextMenu.Root>
           ))}
         </div>
 
