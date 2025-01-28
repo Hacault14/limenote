@@ -5,7 +5,7 @@ import { getClient } from '@/libs/supabase/client'
 import TopNav from '@/components/dashboard/TopNav'
 import Editor from '@/components/editor/Editor'
 
-interface Page {
+interface PageData {
   id: string;
   title: string;
   content: any;
@@ -28,7 +28,7 @@ export const fetchCache = 'force-no-store'
 export const runtime = 'edge'
 
 export default function Page({ params }: { params: { pageId: string } }) {
-  const [page, setPage] = useState<Page | null>(null)
+  const [page, setPage] = useState<PageData | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = getClient()
 

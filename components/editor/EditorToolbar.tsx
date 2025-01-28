@@ -1,8 +1,10 @@
 'use client';
 
-import { Tables } from '@/types/database';
+import React from 'react';
+import { Editor } from '@tiptap/react';
+import type { Tables } from '@/types/database';
 import { useStore } from '@/hooks/useStore';
-import { createClient } from '@/libs/supabase/client';
+import { getClient } from '@/libs/supabase/client';
 import { useState } from 'react';
 
 interface EditorToolbarProps {
@@ -13,7 +15,7 @@ interface EditorToolbarProps {
 export default function EditorToolbar({ page, saving }: EditorToolbarProps) {
   const [isPublishing, setIsPublishing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const supabase = createClient();
+  const supabase = getClient();
 
   const togglePublish = async () => {
     setIsPublishing(true);

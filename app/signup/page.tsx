@@ -4,13 +4,13 @@ import React from 'react';
 import { useState } from 'react';
 import Image from 'next/image'
 import ButtonSignin from '@/components/ButtonSignin'
-import { createClient } from '@/libs/supabase/client';
+import { getClient } from '@/libs/supabase/client'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
-  const supabase = createClient();
+  const supabase = getClient();
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
