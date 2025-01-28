@@ -5,7 +5,6 @@ import { getClient } from "@/libs/supabase/client";
 import { useEffect, useState, ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { Crisp } from "crisp-sdk-web";
-import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "react-hot-toast";
 import { Tooltip } from "react-tooltip";
 import config from "@/config";
@@ -69,9 +68,6 @@ const CrispChat = (): null => {
 const ClientLayout = ({ children }: { children: ReactNode }) => {
   return (
     <>
-      {/* Show a progress bar at the top when navigating between pages */}
-      <NextTopLoader color={config.colors.main} showSpinner={false} />
-
       {/* Content inside app/page.js files  */}
       {children}
 

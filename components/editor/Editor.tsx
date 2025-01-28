@@ -5,7 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import BulletList from '@tiptap/extension-bullet-list'
 import OrderedList from '@tiptap/extension-ordered-list'
 import ListItem from '@tiptap/extension-list-item'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { getClient } from '@/libs/supabase/client'
 import { Bold, Italic, Code, Link, Type, List, ListOrdered, Quote } from 'lucide-react'
 
@@ -30,12 +30,20 @@ export interface EditorProps {
 
 export default function Editor({ 
   pageId, 
-  initialTitle = 'Untitled',
+  initialTitle = 'New page',
   initialContent = '',
   onTitleChange 
 }: EditorProps) {
-  const [title, setTitle] = useState(initialTitle)
+  const [title, setTitle] = useState('')  // Start with empty title
+  const titleInputRef = useRef<HTMLInputElement>(null)
   const supabase = getClient()
+
+  // Focus the title input when component mounts, but don't select it
+  useEffect(() => {
+    if (titleInputRef.current) {
+      titleInputRef.current.focus()
+    }
+  }, [])
 
   const editor = useEditor({
     extensions: [
@@ -101,9 +109,12 @@ export default function Editor({
   const debouncedUpdatePage = useCallback(
     debounce(async (newTitle: string) => {
       try {
+        // If title is empty, use 'New page'
+        const titleToSave = newTitle.trim() || 'New page'
+        
         const { data, error } = await supabase
           .from('pages')
-          .update({ title: newTitle, updated_at: new Date().toISOString() })
+          .update({ title: titleToSave, updated_at: new Date().toISOString() })
           .eq('id', pageId)
           .select()
           .single()
@@ -111,8 +122,8 @@ export default function Editor({
         if (error) throw error
         
         // Only update the title state if the database update was successful
-        setTitle(newTitle)
-        onTitleChange?.(newTitle)
+        setTitle(newTitle) // Keep empty in editor if empty
+        onTitleChange?.(titleToSave) // Send 'New page' to parent if empty
       } catch (error) {
         console.error('Error updating page title:', error)
         // Revert to the last known good title from the database
@@ -122,7 +133,7 @@ export default function Editor({
           .eq('id', pageId)
           .single()
         if (data) {
-          setTitle(data.title)
+          setTitle(data.title === 'New page' ? '' : data.title)
           onTitleChange?.(data.title)
         }
       }
@@ -132,28 +143,28 @@ export default function Editor({
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
-    // Update local state immediately for responsiveness
     setTitle(newTitle)
-    // Debounce the database update
     debouncedUpdatePage(newTitle)
   }
 
-  // Update local title when initialTitle prop changes
+  // Update local title when initialTitle changes
   useEffect(() => {
-    setTitle(initialTitle)
+    // If initialTitle is 'New page', keep the input empty
+    setTitle(initialTitle === 'New page' ? '' : initialTitle)
   }, [initialTitle])
 
   return (
     <div className="space-y-8">
       <input
+        ref={titleInputRef}
         type="text"
         value={title}
         onChange={handleTitleChange}
-        placeholder="Untitled"
+        placeholder="New page"
         className="text-4xl font-bold bg-transparent border-none outline-none w-full text-white placeholder-gray-500"
       />
       
-      <div className="prose-lg">
+      <div className="prose prose-invert prose-lg">
         {editor && (
           <BubbleMenu 
             editor={editor} 
@@ -202,7 +213,7 @@ export default function Editor({
         )}
         <EditorContent 
           editor={editor} 
-          className="min-h-[500px] focus:outline-none"
+          className="min-h-[500px] focus:outline-none text-gray-300"
         />
       </div>
     </div>

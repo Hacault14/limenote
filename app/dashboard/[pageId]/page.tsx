@@ -1,16 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { getClient } from '@/libs/supabase/client'
-import Sidebar from '@/components/dashboard/Sidebar'
 import TopNav from '@/components/dashboard/TopNav'
 import Editor from '@/components/editor/Editor'
 
 interface Page {
   id: string;
   title: string;
-  content: any;  // Using any for now since content can be various types
+  content: any;
   workspace_id: string;
   created_by: string;
   updated_at: string;
@@ -20,40 +18,22 @@ interface Page {
   published_settings: any;
   icon: string;
   cover_image: string;
+  is_favorite: boolean;
 }
 
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+export const runtime = 'edge'
+
 export default function Page({ params }: { params: { pageId: string } }) {
-  const router = useRouter()
-  const supabase = getClient()
-  const [loading, setLoading] = useState(true)
-  const [authenticated, setAuthenticated] = useState(false)
   const [page, setPage] = useState<Page | null>(null)
+  const [loading, setLoading] = useState(true)
+  const supabase = getClient()
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error || !session) {
-          router.push('/signin')
-          return
-        }
-
-        setAuthenticated(true)
-        setLoading(false)
-      } catch (error) {
-        console.error('Session check error:', error)
-        router.push('/signin')
-      }
-    }
-
-    checkSession()
-  }, [router, supabase.auth])
-
-  useEffect(() => {
-    const fetchPage = async () => {
-      if (!authenticated) return
-
+    const getPage = async () => {
       try {
         const { data, error } = await supabase
           .from('pages')
@@ -64,40 +44,50 @@ export default function Page({ params }: { params: { pageId: string } }) {
         if (error) throw error
         setPage(data)
       } catch (error) {
-        console.error('Error fetching page:', error)
+        console.error('Error:', error)
+      } finally {
+        setLoading(false)
       }
     }
 
-    fetchPage()
-  }, [authenticated, params.pageId, supabase])
+    getPage()
+  }, [params.pageId, supabase])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 bg-[#191919]">
-        <div className="text-white">Loading...</div>
-      </div>
-    )
+  const handleTitleChange = (newTitle: string) => {
+    setPage(prev => prev ? { ...prev, title: newTitle } : null)
   }
 
-  if (!authenticated) {
-    return null
+  const handleFavoriteChange = (isFavorite: boolean) => {
+    setPage(prev => prev ? { ...prev, is_favorite: isFavorite } : null)
   }
 
   return (
-    <div className="min-h-screen bg-[#191919] text-gray-300">
-      <Sidebar />
-      <TopNav title={page?.title || 'Untitled'} pageId={params.pageId} />
+    <>
+      <TopNav 
+        title={page?.title} 
+        pageId={params.pageId} 
+        isFavorite={page?.is_favorite}
+        onFavoriteChange={handleFavoriteChange}
+      />
       
       <main className="pl-52 pt-12">
         <div className="max-w-4xl mx-auto p-8">
-          <Editor 
-            initialContent={page?.content}
-            initialTitle={page?.title}
-            pageId={params.pageId}
-            onTitleChange={(title) => setPage(prev => prev ? { ...prev, title } : null)}
-          />
+          {loading ? (
+            <div className="animate-pulse space-y-4">
+              <div className="h-10 bg-[#2f2f2f] rounded w-1/3"></div>
+              <div className="h-4 bg-[#2f2f2f] rounded w-full"></div>
+              <div className="h-4 bg-[#2f2f2f] rounded w-2/3"></div>
+            </div>
+          ) : (
+            <Editor 
+              pageId={params.pageId} 
+              initialTitle={page?.title}
+              initialContent={page?.content as string}
+              onTitleChange={handleTitleChange}
+            />
+          )}
         </div>
       </main>
-    </div>
+    </>
   )
 } 
