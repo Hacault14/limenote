@@ -20,16 +20,22 @@ export default function TopNav({ title = 'New page', pageId, isFavorite = false,
   const handleToggleFavorite = async () => {
     if (!pageId) return
 
+    // Optimistically update the UI
+    setIsStarred(!isStarred)
+    onFavoriteChange?.(!isStarred)
+
     try {
       const { error } = await supabase
         .from('pages')
         .update({ is_favorite: !isStarred })
         .eq('id', pageId)
 
-      if (error) throw error
-
-      setIsStarred(!isStarred)
-      onFavoriteChange?.(!isStarred)
+      if (error) {
+        // Revert on error
+        setIsStarred(isStarred)
+        onFavoriteChange?.(isStarred)
+        throw error
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error)
     }

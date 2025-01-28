@@ -52,6 +52,7 @@
     "resend": "^4.0.1",
     "sonner": "^1.7.2",
     "stripe": "^13.11.0",
+    "supabase": "^2.6.8",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
