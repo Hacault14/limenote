@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Tables } from '@/types/database';
 import { useStore } from '@/hooks/useStore';
-import { createClient } from '@/libs/supabase/client';
+import { getClient } from '@/libs/supabase/client';
 import { Editor as TiptapEditor, EditorContent as TiptapEditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -18,7 +18,7 @@ interface EditorContentProps {
 }
 
 export default function EditorContent({ page, onSave }: EditorContentProps) {
-  const supabase = createClient();
+  const supabase = getClient();
   const [autoSaveTimer, setAutoSaveTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({

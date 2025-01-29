@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { User } from "@supabase/supabase-js";
-import { createClient } from "@/libs/supabase/client";
+import { getClient } from "@/libs/supabase/client";
 import apiClient from "@/libs/api";
 import { useRouter } from 'next/navigation';
 
@@ -16,7 +16,7 @@ import { useRouter } from 'next/navigation';
 // See more at https://shipfa.st/docs/components/buttonAccount
 const ButtonAccount = () => {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = getClient();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User>(null);
 

@@ -7,7 +7,7 @@ import Sidebar from '@/components/dashboard/Sidebar'
 import TopNav from '@/components/dashboard/TopNav'
 import Editor from '@/components/editor/Editor'
 
-interface Page {
+interface PageType {
   id: string;
   title: string;
   content: any;  // Using any for now since content can be various types
@@ -27,7 +27,7 @@ export default function Page({ params }: { params: { pageId: string } }) {
   const supabase = getClient()
   const [loading, setLoading] = useState(true)
   const [authenticated, setAuthenticated] = useState(false)
-  const [page, setPage] = useState<Page | null>(null)
+  const [page, setPage] = useState<PageType | null>(null)
 
   useEffect(() => {
     const checkSession = async () => {
