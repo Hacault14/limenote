@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import type { JSX } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/libs/supabase/client'
+import { getClient } from '@/libs/supabase/client'
 
 type OnboardingStep = 'profile' | 'usage' | 'team' | 'details' | 'interests' | 'templates' | 'workspace';
 
@@ -48,7 +48,7 @@ interface WorkTemplates {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = getClient();
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('profile');
   const [selectedUsage, setSelectedUsage] = useState<string>('');

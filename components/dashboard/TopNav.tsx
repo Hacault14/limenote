@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation'
 import { useStore } from '@/hooks/useStore'
 import { useEffect, useState } from 'react'
 import { getClient } from '@/libs/supabase/client'
+import { Tables } from '@/types/database'
 
 interface TopNavProps {
   title?: string
@@ -12,6 +13,14 @@ interface TopNavProps {
 export default function TopNav({ title = 'Untitled', pageId }: TopNavProps) {
   const router = useRouter()
   const supabase = getClient()
+  const { pages, updatePage } = useStore()
+  const currentPage = pages.find(p => p.id === pageId)
+  const isFavorite = currentPage?.is_favorite || false
+
+  const handleFavorite = async () => {
+    if (!pageId) return
+    await updatePage(pageId, { is_favorite: !isFavorite })
+  }
 
   const handleSignOut = async () => {
     try {
@@ -39,8 +48,15 @@ export default function TopNav({ title = 'Untitled', pageId }: TopNavProps) {
         <button className="p-1.5 hover:bg-[#2f2f2f] rounded">
           <MessageSquare size={16} />
         </button>
-        <button className="p-1.5 hover:bg-[#2f2f2f] rounded">
-          <Star size={16} />
+        <button 
+          onClick={handleFavorite}
+          className="p-1.5 hover:bg-[#2f2f2f] rounded"
+        >
+          <Star 
+            size={16} 
+            className={isFavorite ? 'text-yellow-500' : ''}
+            fill={isFavorite ? 'currentColor' : 'none'}
+          />
         </button>
         <button className="p-1.5 hover:bg-[#2f2f2f] rounded">
           <MoreHorizontal size={16} />
