@@ -8,10 +8,12 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Search, Home, Inbox, Calendar, Settings, Trash, HelpCircle, Users, ChevronDown, Plus, ChevronsLeft, Star, Copy, FileEdit, FolderInput, Trash2, FileUp, ExternalLink } from 'lucide-react'
 import * as ContextMenu from '@radix-ui/react-context-menu'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 
 type Page = Tables<'pages'> & {
   is_favorite: boolean
   position_index: number
+  favorite_position_index?: number
 }
 
 const sidebarItems = [
@@ -203,6 +205,84 @@ export default function Sidebar() {
     await updatePage(page.id, { is_favorite: !page.is_favorite })
   }
 
+  const handleDragEnd = async (result: any) => {
+    if (!result.destination) return;
+
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    const sourceDroppableId = result.source.droppableId;
+    const destinationDroppableId = result.destination.droppableId;
+
+    // Prevent dragging between lists
+    if (sourceDroppableId !== destinationDroppableId) {
+      return;
+    }
+
+    // Extract the actual page ID from the draggableId by removing the prefix
+    const draggedId = result.draggableId.replace(/(fav-|page-)/, '');
+
+    // Get all pages of the relevant type (favorites or non-favorites)
+    const relevantPages = [...pages]
+      .filter(p => sourceDroppableId === 'favorites' ? p.is_favorite : true)
+      .sort((a, b) => {
+        if (sourceDroppableId === 'favorites') {
+          return (a.favorite_position_index || 0) - (b.favorite_position_index || 0);
+        }
+        return a.position_index - b.position_index;
+      });
+
+    // Find the dragged page
+    const draggedPage = pages.find(p => p.id === draggedId);
+    if (!draggedPage) return;
+
+    // Remove the dragged item and insert it at the new position
+    const [movedPage] = relevantPages.splice(sourceIndex, 1);
+    relevantPages.splice(destinationIndex, 0, movedPage);
+
+    // Calculate new position indices with larger gaps to prevent conflicts
+    const updatedPages = pages.map(page => {
+      if (sourceDroppableId === 'favorites' && !page.is_favorite) {
+        return page;
+      }
+
+      const index = relevantPages.findIndex(p => p.id === page.id);
+      if (index === -1) return page;
+
+      return {
+        ...page,
+        ...(sourceDroppableId === 'favorites' 
+          ? { favorite_position_index: index * 1000 }
+          : { position_index: index * 1000 })
+      };
+    });
+
+    // Update local state immediately
+    setPages(updatedPages);
+
+    // Prepare database updates
+    const updates = relevantPages.map((page, index) => ({
+      id: page.id,
+      workspace_id: page.workspace_id,
+      title: page.title,
+      ...(sourceDroppableId === 'favorites'
+        ? { favorite_position_index: index * 1000 }
+        : { position_index: index * 1000 }),
+      updated_at: new Date().toISOString()
+    }));
+
+    // Update the database
+    try {
+      const { error } = await supabase
+        .from('pages')
+        .upsert(updates);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating page positions:', error);
+      setPages(pages); // Revert on error
+    }
+  };
+
   if (!sidebarOpen) return null
 
   return (
@@ -270,204 +350,264 @@ export default function Sidebar() {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#2f2f2f] [&::-webkit-scrollbar-track]:bg-transparent">
-        {/* Favorites section - only show if there are favorites */}
-        {pages.some(page => page.is_favorite) && (
+        <DragDropContext onDragEnd={handleDragEnd}>
+          {/* Favorites section */}
+          {pages.some(page => page.is_favorite) && (
+            <div className="px-3 py-2">
+              <div className="text-[11px] font-semibold text-gray-500 mb-2 px-2">FAVORITES</div>
+              <Droppable droppableId="favorites">
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {pages
+                      .filter(page => page.is_favorite)
+                      .sort((a, b) => (a.favorite_position_index || 0) - (b.favorite_position_index || 0))
+                      .map((page, index) => (
+                        <Draggable key={`fav-${page.id}`} draggableId={`fav-${page.id}`} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              style={{
+                                ...provided.draggableProps.style,
+                                opacity: snapshot.isDragging ? 0.8 : 1
+                              }}
+                            >
+                              <ContextMenu.Root>
+                                <ContextMenu.Trigger>
+                                  <Link
+                                    href={`/dashboard/${page.id}`}
+                                    className={`flex items-center px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 group/link ${
+                                      pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
+                                    }`}
+                                    onClick={(e) => {
+                                      if (snapshot.isDragging) {
+                                        e.preventDefault();
+                                      }
+                                    }}
+                                  >
+                                    <span className="truncate">{page.title}</span>
+                                  </Link>
+                                </ContextMenu.Trigger>
+                                {/* Context menu content */}
+                                <ContextMenu.Portal>
+                                  <ContextMenu.Content className="min-w-[220px] bg-[#2f2f2f] rounded-md overflow-hidden p-1 shadow-xl border border-[#3f3f3f] text-white">
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                      onClick={() => handleFavorite(page)}
+                                    >
+                                      <Star size={16} className="mr-2 text-yellow-500" />
+                                      Remove from Favorites
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                      onClick={() => handleDuplicate(page)}
+                                    >
+                                      <FileEdit size={16} className="mr-2" />
+                                      Duplicate
+                                      <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    >
+                                      <FileEdit size={16} className="mr-2" />
+                                      Rename
+                                      <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+R</span>
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    >
+                                      <FolderInput size={16} className="mr-2" />
+                                      Move to
+                                      <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+P</span>
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm text-red-400 cursor-pointer"
+                                      onClick={() => handleDelete(page.id)}
+                                    >
+                                      <Trash2 size={16} className="mr-2" />
+                                      Move to Trash
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    >
+                                      <FileUp size={16} className="mr-2" />
+                                      Turn into wiki
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    >
+                                      <ExternalLink size={16} className="mr-2" />
+                                      Open in new tab
+                                      <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+⏎</span>
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Item 
+                                      className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    >
+                                      <ExternalLink size={16} className="mr-2" />
+                                      Open in side peek
+                                      <span className="ml-auto text-xs text-gray-400">Alt+Click</span>
+                                    </ContextMenu.Item>
+                                  </ContextMenu.Content>
+                                </ContextMenu.Portal>
+                              </ContextMenu.Root>
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          )}
+
+          {/* Pages section */}
           <div className="px-3 py-2">
-            <div className="text-[11px] font-semibold text-gray-500 mb-2 px-2">FAVORITES</div>
-            {pages
-              .filter(page => page.is_favorite)
-              .sort((a, b) => a.position_index - b.position_index)
-              .map((page) => (
-                <ContextMenu.Root key={`fav-${page.id}`}>
-                  <ContextMenu.Trigger>
-                    <Link
-                      href={`/dashboard/${page.id}`}
-                      className={`flex items-center px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 group/link ${
-                        pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
-                      }`}
-                    >
-                      <span className="truncate">{page.title}</span>
-                    </Link>
-                  </ContextMenu.Trigger>
-                  {/* Context menu content */}
-                  <ContextMenu.Portal>
-                    <ContextMenu.Content className="min-w-[220px] bg-[#2f2f2f] rounded-md overflow-hidden p-1 shadow-xl border border-[#3f3f3f] text-white">
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                        onClick={() => handleFavorite(page)}
-                      >
-                        <Star size={16} className="mr-2 text-yellow-500" />
-                        Remove from Favorites
-                      </ContextMenu.Item>
-                      <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                        onClick={() => handleDuplicate(page)}
-                      >
-                        <FileEdit size={16} className="mr-2" />
-                        Duplicate
-                        <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
-                      </ContextMenu.Item>
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                      >
-                        <FileEdit size={16} className="mr-2" />
-                        Rename
-                        <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+R</span>
-                      </ContextMenu.Item>
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                      >
-                        <FolderInput size={16} className="mr-2" />
-                        Move to
-                        <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+P</span>
-                      </ContextMenu.Item>
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm text-red-400 cursor-pointer"
-                        onClick={() => handleDelete(page.id)}
-                      >
-                        <Trash2 size={16} className="mr-2" />
-                        Move to Trash
-                      </ContextMenu.Item>
-                      <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                      >
-                        <FileUp size={16} className="mr-2" />
-                        Turn into wiki
-                      </ContextMenu.Item>
-                      <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                      >
-                        <ExternalLink size={16} className="mr-2" />
-                        Open in new tab
-                        <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+⏎</span>
-                      </ContextMenu.Item>
-                      <ContextMenu.Item 
-                        className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                      >
-                        <ExternalLink size={16} className="mr-2" />
-                        Open in side peek
-                        <span className="ml-auto text-xs text-gray-400">Alt+Click</span>
-                      </ContextMenu.Item>
-                    </ContextMenu.Content>
-                  </ContextMenu.Portal>
-                </ContextMenu.Root>
-              ))}
+            <div className="text-[11px] font-semibold text-gray-500 mb-2 px-2">PAGES</div>
+            <Droppable droppableId="pages">
+              {(provided) => (
+                <div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {pages
+                    .sort((a, b) => a.position_index - b.position_index)
+                    .map((page, index) => (
+                      <Draggable key={`page-${page.id}`} draggableId={`page-${page.id}`} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              opacity: snapshot.isDragging ? 0.8 : 1
+                            }}
+                          >
+                            <ContextMenu.Root>
+                              <ContextMenu.Trigger>
+                                <Link
+                                  href={`/dashboard/${page.id}`}
+                                  className={`flex items-center px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 group/link ${
+                                    pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
+                                  }`}
+                                  onClick={(e) => {
+                                    if (snapshot.isDragging) {
+                                      e.preventDefault();
+                                    }
+                                  }}
+                                >
+                                  <span className="truncate">{page.title}</span>
+                                </Link>
+                              </ContextMenu.Trigger>
+
+                              <ContextMenu.Portal>
+                                <ContextMenu.Content 
+                                  className="min-w-[220px] bg-[#2f2f2f] rounded-md overflow-hidden p-1 shadow-xl border border-[#3f3f3f] text-white"
+                                >
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    onClick={() => handleFavorite(page)}
+                                  >
+                                    <Star size={16} className={`mr-2 ${page.is_favorite ? 'text-yellow-500' : ''}`} />
+                                    {page.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                    onClick={() => handleDuplicate(page)}
+                                  >
+                                    <FileEdit size={16} className="mr-2" />
+                                    Duplicate
+                                    <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                  >
+                                    <FileEdit size={16} className="mr-2" />
+                                    Rename
+                                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+R</span>
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                  >
+                                    <FolderInput size={16} className="mr-2" />
+                                    Move to
+                                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+P</span>
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm text-red-400 cursor-pointer"
+                                    onClick={() => handleDelete(page.id)}
+                                  >
+                                    <Trash2 size={16} className="mr-2" />
+                                    Move to Trash
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                  >
+                                    <FileUp size={16} className="mr-2" />
+                                    Turn into wiki
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                  >
+                                    <ExternalLink size={16} className="mr-2" />
+                                    Open in new tab
+                                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+⏎</span>
+                                  </ContextMenu.Item>
+
+                                  <ContextMenu.Item 
+                                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
+                                  >
+                                    <ExternalLink size={16} className="mr-2" />
+                                    Open in side peek
+                                    <span className="ml-auto text-xs text-gray-400">Alt+Click</span>
+                                  </ContextMenu.Item>
+                                </ContextMenu.Content>
+                              </ContextMenu.Portal>
+                            </ContextMenu.Root>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           </div>
-        )}
 
-        {/* Pages section */}
-        <div className="px-3 py-2">
-          <div className="text-[11px] font-semibold text-gray-500 mb-2 px-2">PAGES</div>
-          {pages
-            .sort((a, b) => a.position_index - b.position_index)
-            .map((page) => (
-            <ContextMenu.Root key={page.id}>
-              <ContextMenu.Trigger>
-                <Link
-                  href={`/dashboard/${page.id}`}
-                  className={`flex items-center px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1 group/link ${
-                    pathname === `/dashboard/${page.id}` ? 'bg-[#2f2f2f]' : ''
-                  }`}
-                >
-                  <span className="truncate">{page.title}</span>
-                </Link>
-              </ContextMenu.Trigger>
-
-              <ContextMenu.Portal>
-                <ContextMenu.Content 
-                  className="min-w-[220px] bg-[#2f2f2f] rounded-md overflow-hidden p-1 shadow-xl border border-[#3f3f3f] text-white"
-                >
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                    onClick={() => handleFavorite(page)}
-                  >
-                    <Star size={16} className={`mr-2 ${page.is_favorite ? 'text-yellow-500' : ''}`} />
-                    {page.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                    onClick={() => handleDuplicate(page)}
-                  >
-                    <FileEdit size={16} className="mr-2" />
-                    Duplicate
-                    <span className="ml-auto text-xs text-gray-400">Ctrl+D</span>
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                  >
-                    <FileEdit size={16} className="mr-2" />
-                    Rename
-                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+R</span>
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                  >
-                    <FolderInput size={16} className="mr-2" />
-                    Move to
-                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+P</span>
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm text-red-400 cursor-pointer"
-                    onClick={() => handleDelete(page.id)}
-                  >
-                    <Trash2 size={16} className="mr-2" />
-                    Move to Trash
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                  >
-                    <FileUp size={16} className="mr-2" />
-                    Turn into wiki
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Separator className="h-px bg-[#3f3f3f] my-1" />
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                  >
-                    <ExternalLink size={16} className="mr-2" />
-                    Open in new tab
-                    <span className="ml-auto text-xs text-gray-400">Ctrl+⇧+⏎</span>
-                  </ContextMenu.Item>
-
-                  <ContextMenu.Item 
-                    className="flex items-center px-2 py-1.5 hover:bg-[#3f3f3f] rounded text-sm cursor-pointer text-white"
-                  >
-                    <ExternalLink size={16} className="mr-2" />
-                    Open in side peek
-                    <span className="ml-auto text-xs text-gray-400">Alt+Click</span>
-                  </ContextMenu.Item>
-                </ContextMenu.Content>
-              </ContextMenu.Portal>
-            </ContextMenu.Root>
-          ))}
-        </div>
-
-        {/* System pages section */}
-        <div className="px-3 py-2 mb-4">
-          {systemPages.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1"
-            >
-              <item.icon size={16} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </div>
+          {/* System pages section */}
+          <div className="px-3 py-2 mb-4">
+            {systemPages.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="flex items-center space-x-2 px-2 py-1 rounded hover:bg-[#2f2f2f] mb-1"
+              >
+                <item.icon size={16} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </DragDropContext>
       </div>
     </div>
   )
