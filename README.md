@@ -1,90 +1,92 @@
-# FckSubscription Boilerplate
+# LimeNote 📝
 
-A modern SaaS boilerplate built with TypeScript, Supabase, and Stripe. Get your subscription-based service up and running quickly with this production-ready template.
+A modern, elegant note-taking application built with cutting-edge web technologies. LimeNote combines simplicity with powerful features to help you capture and organize your thoughts effectively.
 
----
-A savoir :
+## 🚀 Tech Stack
 
-1. Pour setup une landing page clean vous devez tout faire dans @config.ts    Les couleurs, textes et tout en un seul fichier !
-      A savoir aussi : les apps fcksubscription ont 3 couleurs : noir, blanc et une couleur que vous choisisez et que vous mettez dans le config 
-2. Vous avez de notepad cursor que j'ai rédigé et que j'utilise dans le folder cursor-notepads    Attention il faut parfois les modifier pour que ce soit votre app ! 
-3. Vous avez un folder pour que Cursor ecrit les commandes SupaBase (supabase-migration) 
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Supabase
+- **Authentication**: Supabase Auth
+- **UI/UX**: Framer Motion for smooth animations
+- **Styling**: TailwindCSS for modern, responsive design
 
-Bon code les Loulous !
----
-
-# Steps
-
-1. git clone https://github.com/martinbon39/fcksubscription-boilerplate.git [YOUR APP]
-2. cd [YOUR APP]
-3. npm install
-4. git remote remove origin
-
----
-## Tech Stack
-
-- [Next.js](https://nextjs.org/) - React framework
-- [TypeScript](https://www.typescriptlang.org/) - Type safety
-- [Supabase](https://supabase.com/) - Backend and authentication
-- [Stripe](https://stripe.com/) - Payment processing
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [Framer Motion](https://www.framer.com/motion/) - Animations
-
-## Prerequisites
+## 🛠️ Prerequisites
 
 Before you begin, ensure you have:
-- Node.js installed (v16 or higher)
+- Node.js (v16 or higher)
+- npm or yarn
 - A Supabase account
-- A Stripe account
+- Git
 
-## Getting Started
+## 🏁 Getting Started
 
-1. **Clone and Install Dependencies**
+1. **Clone the Repository**
+   ```bash
+   git clone [your-repository-url]
+   cd limenote
+   ```
+
+2. **Install Dependencies**
    ```bash
    npm install
+   # or
+   yarn install
    ```
 
-2. **Environment Setup**
-   - Rename `.env.example` to `.env.local`
+3. **Environment Setup**
+   - Copy `.env.example` to `.env.local`
    - Fill in your environment variables:
-     - Supabase credentials
-     - Stripe API keys
-     - Other configuration values
+     ```env
+     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+     ```
 
-3. **Install Additional Dependencies**
+4. **Start Development Server**
    ```bash
-   # Install Framer Motion for animations
-   npm install framer-motion
-
-   # Install Tailwind Forms plugin
-   npm install -D @tailwindcss/forms
+   npm run dev
+   # or
+   yarn dev
    ```
 
-4. **Supabase Setup**
-   - Create a Supabase project
-   - Copy your project URL and anon key to `.env.local`
-   - Set up your database schema (documentation coming soon)
+   Visit [http://localhost:3000](http://localhost:3000) to see your application.
 
-5. **Customize Assets**
-   Before deploying, remember to update:
-   - `icon.png`
-   - `favicon.ico`
-   - OpenGraph images
-   - Twitter card images
+## 🌟 Features
 
-## Development
+- ✨ Clean, minimalist interface
+- 📱 Fully responsive design
+- 🔐 Secure authentication
+- 📝 Rich text editing
+- 🗂️ Organized note management
+- 🌙 Dark/Light mode support
+- ⚡ Real-time sync
 
-```bash
-npm run dev
+## 📁 Project Structure
+
+```
+limenote/
+├── app/                # Next.js app directory
+├── components/         # Reusable UI components
+├── lib/               # Utility functions and helpers
+├── public/            # Static assets
+└── styles/            # Global styles and Tailwind config
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to see your application.
+## 🤝 Contributing
 
-## Documentation
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-For more detailed documentation, visit [shipfas.st/docs](https://shipfas.st/docs)
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## 📄 License
 
-C'est oim
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors who have helped shape LimeNote
+- Built with love using Next.js and Supabase
 
